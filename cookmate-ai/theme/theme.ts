@@ -10,5 +10,6 @@ export const FONTFAMILY: FontFamily = {
 export const COLORS = {
   PRIMARY: '#299446',
   WHITE: "#fff",
-  GRAY: "gray"
+  GRAY: "gray",
+  SECONDARY: "#e6f0e7"
 }

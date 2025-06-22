@@ -102,7 +102,7 @@ export default function Landing() {
           </Text>
           <TouchableOpacity
             style={styles.button}
-            onPress={async () => signIn("exp://192.168.1.11:8081")}
+            onPress={async () => signIn("cookmateai://callback")}
           >
             <Text
               style={{
@@ -115,7 +115,7 @@ export default function Landing() {
               Get Started
             </Text>
           </TouchableOpacity>
-          <Button title="Sign out" onPress={async () => signOut()} />
+          {/* <Button title="Sign out" onPress={async () => signOut()} /> */}
         </View>
       </ScrollView>
     </GestureHandlerRootView>
