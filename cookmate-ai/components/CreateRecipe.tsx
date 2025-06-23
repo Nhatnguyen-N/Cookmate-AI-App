@@ -1,10 +1,33 @@
-import { Image, StyleSheet, Text, TextInput, View } from "react-native";
-import React, { useState } from "react";
+import { Alert, Image, StyleSheet, Text, TextInput, View } from "react-native";
+import React, { useRef, useState } from "react";
 import { COLORS, FONTFAMILY } from "@/theme/theme";
 import Button from "./Button";
-
+import GlobalApi from "@/services/GlobalApi";
+import GENERATE_RECIPE_OPTION_PROMPT from "../services/Prompt";
+import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet";
 const CreateRecipe = () => {
   const [userInput, setUserInput] = useState<string>();
+  const [recipeOptions, setRecipeOptions] = useState<any>([]);
+  const [loading, setLoading] = useState(false);
+  const actionSheetRef = useRef<ActionSheetRef>(null);
+  const OnGenerate = async () => {
+    if (!userInput) {
+      Alert.alert("Please enter details");
+      return;
+    }
+    try {
+      setLoading(true);
+      const result = await GlobalApi.AiModel(
+        userInput + GENERATE_RECIPE_OPTION_PROMPT
+      );
+      console.log(result?.choices[0].message);
+      setRecipeOptions(result?.choices[0].message?.content);
+      setLoading(false);
+      actionSheetRef.current?.show();
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
     <View style={styles.container}>
       <Image
@@ -26,9 +49,34 @@ const CreateRecipe = () => {
       />
       <Button
         label="Generate Recipe"
-        onPress={() => console.log("On Button Press")}
+        onPress={() => OnGenerate()}
+        loading={loading}
         icon={"sparkles"}
       />
+      <ActionSheet ref={actionSheetRef}>
+        <View style={styles.actionSheetContainer}>
+          <Text style={styles.heading}>Select Recipe</Text>
+          <View>
+            {recipeOptions?.map((item: any, index: any) => (
+              <View key={index} style={styles.recipeOptionContainer}>
+                <Text
+                  style={{ fontFamily: FONTFAMILY.outfit_bold, fontSize: 16 }}
+                >
+                  {item?.recipeName}
+                </Text>
+                <Text
+                  style={{
+                    fontFamily: FONTFAMILY.outfit,
+                    color: COLORS.GRAY,
+                  }}
+                >
+                  {item?.description}
+                </Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      </ActionSheet>
     </View>
   );
 };
@@ -66,5 +114,14 @@ const styles = StyleSheet.create({
     marginTop: 8,
     padding: 15,
     fontSize: 16,
+  },
+  actionSheetContainer: {
+    padding: 25,
+  },
+  recipeOptionContainer: {
+    padding: 15,
+    borderWidth: 0.2,
+    borderRadius: 15,
+    marginTop: 15,
   },
 });

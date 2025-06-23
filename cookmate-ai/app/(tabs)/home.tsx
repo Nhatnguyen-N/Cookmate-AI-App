@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { COLORS } from "@/theme/theme";
 import IntroHeader from "@/components/IntroHeader";
 import CreateRecipe from "@/components/CreateRecipe";
+import CategoryList from "@/components/CategoryList";
 
 const Home = () => {
   return (
@@ -20,6 +21,7 @@ const Home = () => {
         {/* Recipe Generator UI */}
         <CreateRecipe />
         {/* Category */}
+        <CategoryList />
       </SafeAreaView>
     </ScrollView>
   );

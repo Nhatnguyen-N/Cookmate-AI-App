@@ -9,28 +9,49 @@ export default function Index() {
   const { user, setUser } = useContext(UserContext);
   const router = useRouter();
   useEffect(() => {
-    if (isAuthenticated) {
-      getIdTokenClaims().then(async (userData) => {
-        if (userData?.email) {
-          const result = await GlobalApi.GetUserByEmail(userData?.email);
-          if (!result.data.data) {
-            const data = {
-              email: userData.email,
-              name: userData.name,
-              picture: userData.picture,
-            };
-            const resp = await GlobalApi.CreateNewUser(data);
-            setUser(resp.data.data);
-            router.replace("/(tabs)/home");
-          } else {
-            setUser(result?.data?.data[0]);
-            router.replace("/(tabs)/home");
-          }
+    const fetchOrCreateUser = async () => {
+      try {
+        const userData = await getIdTokenClaims();
+
+        if (!userData?.email) {
+          console.warn("No email in user claims");
+          // router.replace("/Landing");
+          return;
         }
-      });
+
+        // Log full response để debug
+        const { data: apiResponse } = await GlobalApi.GetUserByEmail(
+          userData.email
+        );
+        // console.log("Full API response:", apiResponse);
+
+        // Xử lý cả 2 định dạng Strapi response
+        const existingUser =
+          apiResponse.data?.[0]?.attributes || apiResponse.data?.[0];
+
+        if (!existingUser) {
+          const newUser = {
+            email: userData.email,
+            name: userData.name, // Fallback name
+            picture: userData.picture,
+          };
+
+          const { data: createdUser } = await GlobalApi.CreateNewUser(newUser);
+          setUser(createdUser.data);
+        } else {
+          setUser(existingUser);
+        }
+        router.replace("/(tabs)/home");
+      } catch (error) {
+        console.error("User fetch error:", error);
+        // Xử lý UI khi lỗi (ví dụ: hiển thị toast)
+      }
+    };
+
+    if (isAuthenticated) {
+      fetchOrCreateUser();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated]);
+  }, [isAuthenticated, getIdTokenClaims, router, setUser]); // Thêm các dependencies cần thiết
   return (
     <View
       style={{

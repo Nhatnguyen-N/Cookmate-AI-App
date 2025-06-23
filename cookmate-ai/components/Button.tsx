@@ -1,4 +1,10 @@
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import React from "react";
 import { COLORS, FONTFAMILY } from "@/theme/theme";
 import { Ionicons } from "@expo/vector-icons";
@@ -6,10 +12,12 @@ const Button = ({
   label,
   onPress,
   icon,
+  loading = false,
 }: {
   label: string;
   onPress?: () => void;
   icon?: React.ComponentProps<typeof Ionicons>["name"];
+  loading: boolean;
 }) => {
   return (
     <TouchableOpacity
@@ -25,8 +33,13 @@ const Button = ({
         alignItems: "center",
       }}
       onPress={onPress}
+      disabled={loading}
     >
-      <Ionicons name={icon} size={20} color={"white"} />
+      {loading ? (
+        <ActivityIndicator color={COLORS.WHITE} />
+      ) : (
+        <Ionicons name={icon} size={20} color={"white"} />
+      )}
       <Text
         style={{
           textAlign: "center",
