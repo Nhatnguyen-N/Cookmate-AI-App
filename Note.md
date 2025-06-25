@@ -9,4 +9,5 @@ day 4:   2:48:51.
 strapi:Backend
 logto: Authentication
 openAI ---> limit 10 request ----> googleAI
-AI guru lab--> generate iamge.====> error.
+AI guru lab--> generate iamge.====> error ===> Modelslab
+

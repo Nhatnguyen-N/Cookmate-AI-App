@@ -1,10 +1,19 @@
-import { FlatList, Image, StyleSheet, Text, View } from "react-native";
+import {
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import React, { useEffect, useState } from "react";
 import GlobalApi from "@/services/GlobalApi";
 import { FONTFAMILY } from "@/theme/theme";
+import { useRouter } from "expo-router";
 
 const CategoryList = () => {
   const [categoryList, setCategoryList] = useState([]);
+  const router = useRouter();
   useEffect(() => {
     GetCategoryList();
   }, []);
@@ -25,7 +34,17 @@ const CategoryList = () => {
         scrollEnabled={false}
         numColumns={4}
         renderItem={({ item, index }: any) => (
-          <View style={styles.categoryContainer}>
+          <TouchableOpacity
+            onPress={() =>
+              router.push({
+                pathname: "/recipe-by-category",
+                params: {
+                  categoryName: item?.name,
+                },
+              })
+            }
+            style={styles.categoryContainer}
+          >
             <Image
               source={{ uri: item?.image?.url }}
               style={{
@@ -41,7 +60,7 @@ const CategoryList = () => {
             >
               {item?.name}
             </Text>
-          </View>
+          </TouchableOpacity>
         )}
       />
     </View>

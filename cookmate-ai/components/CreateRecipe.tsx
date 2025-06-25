@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useRef, useState } from "react";
+import React, { useContext, useRef, useState } from "react";
 import { COLORS, FONTFAMILY } from "@/theme/theme";
 import Button from "./Button";
 import GlobalApi from "@/services/GlobalApi";
@@ -15,55 +15,20 @@ import Prompt from "../services/Prompt";
 import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet";
 
 import {
-  GenerateImageRecipeAIModel,
   GenerateRecipeAIModel,
   GenerateRecipeCompleteAIModel,
 } from "@/services/AiModel";
 import LoadingDialog from "./LoadingDialog";
+import { UserContext } from "@/context/UserContext";
 const CreateRecipe = () => {
   const [userInput, setUserInput] = useState<string>("");
   const [recipeOptions, setRecipeOptions] = useState<any>([]);
   const [loading, setLoading] = useState(false);
   const actionSheetRef = useRef<ActionSheetRef>(null);
   const [openLoading, setOpenLoading] = useState(false);
-  // const OnGenerate = async () => {
-  //   if (!userInput.trim()) {
-  //     Alert.alert("Error", "Please enter valid input");
-  //     return;
-  //   }
+  const { user, setUser } = useContext(UserContext);
+  // console.log(user);
 
-  //   try {
-  //     setLoading(true);
-  //     const result = await GlobalApi.AiModel(
-  //       userInput + GENERATE_RECIPE_OPTION_PROMPT
-  //     );
-
-  //     console.log("API Content:", result?.choices[0].message?.content);
-
-  //     try {
-  //       const content = result?.choices[0].message?.content;
-  //       if (!content) throw new Error("Empty content");
-
-  //       const parsedData = JSON.parse(content);
-  //       setRecipeOptions(parsedData);
-  //       await new Promise((resolve) => setTimeout(resolve, 0)); // Đợi render
-  //       actionSheetRef.current?.show();
-  //     } catch (parseError) {
-  //       console.error("Parse Error:", parseError);
-  //       Alert.alert("Format Error", "Cannot process recipe data");
-  //     }
-  //   } catch (error: any) {
-  //     console.error("API Error:", error);
-  //     Alert.alert(
-  //       "Error",
-  //       error.response?.status === 429
-  //         ? "Please wait before trying again"
-  //         : "Failed to generate recipe"
-  //     );
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
   const OnGenerate = async () => {
     if (!userInput.trim()) {
       Alert.alert("Error", "Please enter valid input");
@@ -74,6 +39,7 @@ const CreateRecipe = () => {
       const PROMPT = userInput + Prompt.GENERATE_RECIPE_OPTION_PROMPT;
       const result = await GenerateRecipeAIModel.sendMessage(PROMPT);
       const resp = JSON.parse(result.response.text());
+      console.log("generate", resp[0]?.recipeName);
       setRecipeOptions(resp);
       setLoading(false);
       actionSheetRef.current?.show();
@@ -81,16 +47,6 @@ const CreateRecipe = () => {
       console.log(error);
       setLoading(false);
     }
-  };
-  const TestLoading = () => {
-    actionSheetRef.current?.show();
-    setTimeout(() => {
-      actionSheetRef.current?.hide();
-      setOpenLoading(true);
-    }, 3000);
-    setTimeout(() => {
-      setOpenLoading(false);
-    }, 5000);
   };
   // const GenerateCompleteRecipe = async (option: any) => {
   //   try {
@@ -148,49 +104,47 @@ const CreateRecipe = () => {
   // };
 
   const GenerateCompleteRecipe = async (option: any) => {
+    console.log("option", option.recipeName);
     try {
       actionSheetRef.current?.hide();
       setTimeout(() => {
         setOpenLoading(true);
       }, 500);
-      // await new Promise((resolve) => requestAnimationFrame(resolve));
-      // await new Promise((resolve) => setTimeout(resolve, 3000));
       const PROMPT =
         "RecipeName:" +
         option?.recipeName +
         "Description:" +
         option?.description +
         Prompt.GENERATE_COMPLETE_RECIPE_PROMPT;
-
-      // Thêm timeout cho API call
-      // const timeoutPromise = new Promise((_, reject) =>
-      //   setTimeout(() => reject(new Error("Request timeout")), 20000)
-      // );
-
-      // const result: any = await Promise.race([
       const result = await GenerateRecipeCompleteAIModel.sendMessage(PROMPT);
-
-      //   timeoutPromise,
-      // ]);
-
       const resp = JSON.parse(result.response.text());
       console.log("resp", resp);
 
       let imagePrompt: string;
+      let JSONContent: any;
       if (Array.isArray(resp)) {
         if (!resp[0]?.imagePrompt)
           throw new Error("Không tìm thấy imagePrompt trong array");
         imagePrompt = resp[0].imagePrompt;
+        JSONContent = resp[0];
       } else if (typeof resp === "object" && resp !== null) {
         if (!resp.imagePrompt)
           throw new Error("Không tìm thấy imagePrompt trong object");
         imagePrompt = resp.imagePrompt;
+        JSONContent = resp;
       } else {
         throw new Error("Response không hợp lệ");
       }
 
-      console.log("imagePrompt", imagePrompt);
-      await GenerateRecipeImage(imagePrompt);
+      const imageUrl = await GenerateRecipeImage(imagePrompt);
+      console.log("JSONContent", JSONContent);
+
+      const insertedRecordResult = await SaveToDb(
+        JSONContent,
+        imageUrl[0]
+        // "https://modelslab-bom.s3.amazonaws.com/modelslab/4539e73f-8a38-4c1c-b757-0ccc9d228b42-0.jpg"
+      );
+      console.log("insertedRecordResult", insertedRecordResult);
     } catch (error: any) {
       console.error("Error in GenerateCompleteRecipe:", error);
       Alert.alert("Error", error.message);
@@ -201,34 +155,38 @@ const CreateRecipe = () => {
   };
   const GenerateRecipeImage = async (imagePrompt: string) => {
     try {
-      console.log("Generating image with prompt:", imagePrompt);
+      // console.log("Generating image with prompt:", imagePrompt);
       if (!imagePrompt?.trim()) {
         throw new Error("Prompt không được trống");
       }
 
-      // Thêm timeout cho API call
-      // const timeoutPromise = new Promise((_, reject) =>
-      //   setTimeout(() => reject(new Error("Image generation timeout")), 20000)
-      // );
-
-      console.log("Calling image generation API...");
-      // const result: any = await Promise.race([
-      const result = await GenerateImageRecipeAIModel.sendMessage(imagePrompt); // Sử dụng imagePrompt thực tế
-      //   timeoutPromise,
-      // ]);
-      const resp = JSON.parse(result.response.text());
-      if (!resp) {
-        throw new Error("Invalid image response");
-      }
-
-      console.log("Image generated successfully");
-      console.log(resp);
-
-      // return result.data.image;
+      const result = await GlobalApi.GenerateAiImageWithDeepAI(imagePrompt);
+      const data = await result.json();
+      console.log("data:", data.output);
+      return data.output;
     } catch (error: any) {
       console.error("Error in GenerateRecipeImage:", error);
       throw error; // Re-throw để hàm cha bắt
     }
+  };
+  const SaveToDb = async (content: any, imageUrl: string) => {
+    const data = {
+      ...content,
+      recipeImage: imageUrl,
+      userEmail: user?.email,
+    };
+    const userData = {
+      name: user?.name,
+      email: user?.email,
+      picture: user?.picture,
+      credits: user?.credits - 1,
+      pref: null,
+    };
+    const result = await GlobalApi.CreateNewRecipe(data);
+    const updateUser = await GlobalApi.UpdateUser(user?.documentId, userData);
+    console.log("Update User", updateUser);
+    // setUser(updateUser);
+    return result.data.data;
   };
   return (
     <View style={styles.container}>

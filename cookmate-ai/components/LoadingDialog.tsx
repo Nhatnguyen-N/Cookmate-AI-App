@@ -3,8 +3,6 @@ import React from "react";
 import { COLORS, FONTFAMILY } from "@/theme/theme";
 
 const LoadingDialog = ({ visible = false, text = "Loading..." }: any) => {
-  console.log("visible", visible);
-
   return (
     <Modal transparent visible={visible}>
       <View style={styles.overlay}>

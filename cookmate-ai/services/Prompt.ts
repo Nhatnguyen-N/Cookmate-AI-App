@@ -6,5 +6,6 @@ export default {
   - emoji icons for each ingredient as icon, quantity as quantity, along with detail step by step recipe as steps
   - Total Calories as calories (only number), Minutes to cook as cookTime and serving number as serve To 
   - relastic image Text prompt as per reciepe as imagePrompt
+  - Give me category List for recipe from [Breakfast,Lunch,Dinner,Salad,Dessert,Fastfood,Drink,Cake] as category 
   - Give me response in JSON format only`
 }
