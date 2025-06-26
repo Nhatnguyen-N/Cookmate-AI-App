@@ -24,11 +24,8 @@ const CreateNewRecipe = (data: any) =>
 const UpdateUser = (uid: any, data: any) =>
   axiosClient.put("user-lists/" + uid, { data: data });
 const GetRecipeByCategory = (category: string) =>
-  axiosClient.get("/recipes", {
-    params: {
-      "filters[category][$contains]": category,
-    },
-  });
+  axiosClient.get("/recipes?filters[category][$containsi]=" + category);
+const GetAllRecipeList = () => axiosClient.get("/recipes?sort[0]=id:desc");
 // Không sử dụng được===> free chỉ được 10 request/day.
 const AiModel = async (prompt: string) =>
   await openai.chat.completions.create({
@@ -85,4 +82,5 @@ export default {
   GenerateAiImage,
   GenerateAiImageWithDeepAI,
   GetRecipeByCategory,
+  GetAllRecipeList,
 };

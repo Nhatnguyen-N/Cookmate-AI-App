@@ -20,6 +20,7 @@ import {
 } from "@/services/AiModel";
 import LoadingDialog from "./LoadingDialog";
 import { UserContext } from "@/context/UserContext";
+import { useRouter } from "expo-router";
 const CreateRecipe = () => {
   const [userInput, setUserInput] = useState<string>("");
   const [recipeOptions, setRecipeOptions] = useState<any>([]);
@@ -28,7 +29,7 @@ const CreateRecipe = () => {
   const [openLoading, setOpenLoading] = useState(false);
   const { user, setUser } = useContext(UserContext);
   // console.log(user);
-
+  const router = useRouter();
   const OnGenerate = async () => {
     if (!userInput.trim()) {
       Alert.alert("Error", "Please enter valid input");
@@ -144,7 +145,14 @@ const CreateRecipe = () => {
         imageUrl[0]
         // "https://modelslab-bom.s3.amazonaws.com/modelslab/4539e73f-8a38-4c1c-b757-0ccc9d228b42-0.jpg"
       );
-      console.log("insertedRecordResult", insertedRecordResult);
+      // console.log("insertedRecordResult", insertedRecordResult);
+
+      router.push({
+        pathname: "/recipe-detail",
+        params: {
+          recipeData: JSON.stringify(insertedRecordResult),
+        },
+      });
     } catch (error: any) {
       console.error("Error in GenerateCompleteRecipe:", error);
       Alert.alert("Error", error.message);
@@ -183,8 +191,8 @@ const CreateRecipe = () => {
       pref: null,
     };
     const result = await GlobalApi.CreateNewRecipe(data);
-    const updateUser = await GlobalApi.UpdateUser(user?.documentId, userData);
-    console.log("Update User", updateUser);
+    // const updateUser = await GlobalApi.UpdateUser(user?.documentId, userData);
+    // console.log("Update User", updateUser);
     // setUser(updateUser);
     return result.data.data;
   };

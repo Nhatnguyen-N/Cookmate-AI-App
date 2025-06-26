@@ -1,19 +1,22 @@
-import { StyleSheet, Text, View } from "react-native";
-import React, { useEffect } from "react";
+import { FlatList, StyleSheet, Text, View } from "react-native";
+import React, { useEffect, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { COLORS, FONTFAMILY } from "@/theme/theme";
 import { SafeAreaView } from "react-native-safe-area-context";
 import GlobalApi from "@/services/GlobalApi";
-import axios, { isAxiosError } from "axios";
+import { isAxiosError } from "axios";
+import RecipeCard from "@/components/RecipeCard";
 const RecipeByCategory = () => {
   const { categoryName } = useLocalSearchParams();
+  const [recipeList, setRecipeList] = useState([]);
+  const [loading, setLoading] = useState(false);
+  // console.log(recipeList);
 
   useEffect(() => {
     GetRecipeListByCategory();
   }, []);
   const GetRecipeListByCategory = async () => {
-    console.log("123");
-
+    setLoading(true);
     try {
       if (!categoryName || typeof categoryName !== "string") {
         throw new Error("Invalid category parameter");
@@ -22,7 +25,7 @@ const RecipeByCategory = () => {
       if (!result.data?.data) {
         throw new Error("Invalid response format");
       }
-      console.log(result.data);
+      setRecipeList(result?.data?.data);
     } catch (error) {
       console.error("GetRecipesByCategory error:", {
         categoryName,
@@ -36,6 +39,8 @@ const RecipeByCategory = () => {
       });
 
       throw error; // Hoặc return giá trị mặc định
+    } finally {
+      setLoading(false);
     }
   };
   return (
@@ -55,6 +60,18 @@ const RecipeByCategory = () => {
       >
         Browse {categoryName} Recipes
       </Text>
+      <FlatList
+        data={recipeList}
+        numColumns={2}
+        refreshing={loading}
+        onRefresh={GetRecipeListByCategory}
+        showsVerticalScrollIndicator={false}
+        renderItem={({ item, index }) => (
+          <View key={index} style={{ flex: 1 }}>
+            <RecipeCard recipe={item} />
+          </View>
+        )}
+      />
     </SafeAreaView>
   );
 };

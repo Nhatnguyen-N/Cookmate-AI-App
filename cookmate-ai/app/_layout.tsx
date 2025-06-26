@@ -4,6 +4,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { LogtoProvider, LogtoConfig, UserScope } from "@logto/rn";
 import { UserContext } from "@/context/UserContext";
 import { useState } from "react";
+import { Ionicons } from "@expo/vector-icons";
 export default function RootLayout() {
   const [loaded, error] = useFonts({
     outfit: require("../assets/fonts/Outfit-Regular.ttf"),
@@ -37,6 +38,17 @@ export default function RootLayout() {
               options={{
                 headerTransparent: true,
                 headerTitle: "",
+                headerBackButtonDisplayMode: "minimal",
+              }}
+            />
+            <Stack.Screen
+              name="recipe-detail/index"
+              options={{
+                // headerTransparent: true,
+                headerTitle: "Detail",
+                headerRight: () => (
+                  <Ionicons name="share" size={24} color={"black"} />
+                ),
                 headerBackButtonDisplayMode: "minimal",
               }}
             />
