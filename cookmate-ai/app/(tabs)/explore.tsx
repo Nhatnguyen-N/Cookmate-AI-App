@@ -15,7 +15,7 @@ const Explore = () => {
     try {
       setLoading(true);
       const result = await GlobalApi.GetAllRecipeList();
-      console.log(result.data.data);
+      // console.log(result.data.data);
       setRecipeList(result.data.data);
     } catch (error) {
       console.log("Error ALl Recipe:", error);
@@ -25,7 +25,13 @@ const Explore = () => {
   };
   return (
     <SafeAreaView
-      style={{ height: "100%", backgroundColor: COLORS.WHITE, padding: 20 }}
+      edges={["top", "left", "right"]}
+      style={{
+        height: "100%",
+        backgroundColor: COLORS.WHITE,
+        padding: 20,
+        paddingBottom: 0,
+      }}
     >
       <Text
         style={{

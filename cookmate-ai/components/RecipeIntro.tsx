@@ -1,9 +1,33 @@
-import { Image, StyleSheet, Text, View } from "react-native";
-import React from "react";
+import {
+  Alert,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import React, { useContext, useState } from "react";
 import { COLORS, FONTFAMILY } from "@/theme/theme";
 import { Ionicons } from "@expo/vector-icons";
+import GlobalApi from "@/services/GlobalApi";
+import { UserContext } from "@/context/UserContext";
 
 const RecipeIntro = ({ recipe }: any) => {
+  const { user } = useContext(UserContext);
+  const [saved, setSaved] = useState(false);
+  const SaveRecipe = async () => {
+    const data = {
+      userEmail: user?.email,
+      recipeDocId: recipe?.documentId,
+    };
+    const result = await GlobalApi.SaveUserFavRecipe(data);
+    console.log(result);
+    Alert.alert("Saved!", "Recipe Saved in your cookbook!");
+    setSaved(true);
+  };
+  const removeSavedRecipe = () => {
+    // Removed Saved Recipe
+  };
   return (
     <View>
       <Image
@@ -14,15 +38,32 @@ const RecipeIntro = ({ recipe }: any) => {
           borderRadius: 20,
         }}
       />
-      <Text
+      <View
         style={{
-          fontFamily: FONTFAMILY.outfit,
-          fontSize: 25,
-          marginTop: 7,
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
         }}
       >
-        {recipe?.recipeName}
-      </Text>
+        <Text
+          style={{
+            fontFamily: FONTFAMILY.outfit,
+            fontSize: 25,
+            marginTop: 7,
+          }}
+        >
+          {recipe?.recipeName}
+        </Text>
+        <TouchableOpacity
+          onPress={() => (!saved ? SaveRecipe() : removeSavedRecipe())}
+        >
+          {!saved ? (
+            <Ionicons name="bookmark-outline" size={24} color={"black"} />
+          ) : (
+            <Ionicons name="bookmark-outline" size={24} color={"red"} />
+          )}
+        </TouchableOpacity>
+      </View>
       <Text
         style={{
           fontFamily: FONTFAMILY.outfit_bold,

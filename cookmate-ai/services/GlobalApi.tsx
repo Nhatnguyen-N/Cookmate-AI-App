@@ -2,7 +2,7 @@ import axios from "axios";
 import OpenAI from "openai";
 
 const axiosClient = axios.create({
-  baseURL: "http://192.168.1.10:1337/api",
+  baseURL: "http://192.168.1.11:1337/api",
   headers: {
     Authorization: `Bearer ${process.env.EXPO_PUBLIC_STRAPI_API_KEY}`,
   },
@@ -26,6 +26,19 @@ const UpdateUser = (uid: any, data: any) =>
 const GetRecipeByCategory = (category: string) =>
   axiosClient.get("/recipes?filters[category][$containsi]=" + category);
 const GetAllRecipeList = () => axiosClient.get("/recipes?sort[0]=id:desc");
+const GetALlRecipesByLimit = (limit: number) =>
+  axiosClient.get(
+    "/recipes?sort[0]=id:desc&pagination[start]=1&pagination[limit]=" + limit
+  );
+const GetUserCreatedRecipe = (userEmail: string) =>
+  axiosClient.get(
+    "/recipes?filters[userEmail][$eq]=" + userEmail + "&sort[0]=id:desc"
+  );
+const SaveUserFavRecipe = (data: any) =>
+  axiosClient.post("/user-favorites", { data: data });
+const SavedRecipeList = (userEmail: string) =>
+  axiosClient.get("/user-favorites?filters[userEmail][$eq]=" + userEmail);
+const GetSavedRecipes = (query: string) => axiosClient.get("/recipes?" + query);
 // Không sử dụng được===> free chỉ được 10 request/day.
 const AiModel = async (prompt: string) =>
   await openai.chat.completions.create({
@@ -83,4 +96,9 @@ export default {
   GenerateAiImageWithDeepAI,
   GetRecipeByCategory,
   GetAllRecipeList,
+  GetALlRecipesByLimit,
+  GetUserCreatedRecipe,
+  SaveUserFavRecipe,
+  SavedRecipeList,
+  GetSavedRecipes,
 };
