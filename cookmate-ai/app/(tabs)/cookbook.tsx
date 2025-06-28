@@ -42,7 +42,7 @@ const CookBook = () => {
       setLoading(true);
       //Fetch Save Document Id
       const result = await GlobalApi.SavedRecipeList(user?.email);
-      console.log(result.data.data);
+      // console.log("fav:",result.data.data);
       const savedData = result.data.data;
       let QueryFilter = "";
       savedData.forEach((element: any) => {
@@ -55,7 +55,7 @@ const CookBook = () => {
       console.log(QueryFilter);
       // Pass Document Id To Fetch Recipes
       const resp = await GlobalApi.GetSavedRecipes(QueryFilter);
-      // console.log("resp", resp.data.data);
+      console.log("resp", resp.data.data);
       setRecipeList(resp.data.data);
     } catch (error) {
       console.log(error);
@@ -63,6 +63,7 @@ const CookBook = () => {
       setLoading(false);
     }
   };
+
   return (
     <SafeAreaView
       edges={["top", "left", "right"]}

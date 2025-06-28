@@ -14,6 +14,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { COLORS, FONTFAMILY } from "@/theme/theme";
 import { useLogto } from "@logto/rn";
 import * as WebBrowser from "expo-web-browser";
+import * as SecureStore from "expo-secure-store";
 export default function Landing() {
   const imageList = [
     require("../assets/images/1.jpg"),
@@ -26,7 +27,18 @@ export default function Landing() {
     require("../assets/images/5.jpg"),
     require("../assets/images/6.jpg"),
   ];
-  const { signIn, signOut, isAuthenticated } = useLogto();
+  const { signIn, getIdToken } = useLogto();
+  const handleLogin = async () => {
+    try {
+      await signIn("cookmateai://callback");
+      const idToken = await getIdToken();
+      if (idToken) {
+        await SecureStore.setItemAsync("authToken", idToken);
+      }
+    } catch (error) {
+      console.error("Logto login error:", error);
+    }
+  };
   return (
     <GestureHandlerRootView>
       <ScrollView>
@@ -100,10 +112,7 @@ export default function Landing() {
           >
             Generate delicious recipes in seconds with the power of AI! 🍔✨
           </Text>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={async () => signIn("cookmateai://callback")}
-          >
+          <TouchableOpacity style={styles.button} onPress={() => handleLogin()}>
             <Text
               style={{
                 textAlign: "center",

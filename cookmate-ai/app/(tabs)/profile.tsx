@@ -12,7 +12,7 @@ import { COLORS, FONTFAMILY } from "@/theme/theme";
 import { UserContext } from "@/context/UserContext";
 import { useRouter } from "expo-router";
 import { useLogto } from "@logto/rn";
-
+import * as SecureStore from "expo-secure-store";
 const Profile = () => {
   const options = [
     {
@@ -42,6 +42,7 @@ const Profile = () => {
   const onOptionClick = async (option: any) => {
     if (option?.path === "logout") {
       await signOut();
+      await SecureStore.setItemAsync("authToken", "");
       router.replace("/");
       return;
     }

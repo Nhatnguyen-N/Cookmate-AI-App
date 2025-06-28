@@ -12,9 +12,10 @@ import { Ionicons } from "@expo/vector-icons";
 import GlobalApi from "@/services/GlobalApi";
 import { UserContext } from "@/context/UserContext";
 
-const RecipeIntro = ({ recipe }: any) => {
+const RecipeIntro = ({ recipe, isFav }: any) => {
   const { user } = useContext(UserContext);
   const [saved, setSaved] = useState(false);
+
   const SaveRecipe = async () => {
     const data = {
       userEmail: user?.email,
@@ -23,7 +24,7 @@ const RecipeIntro = ({ recipe }: any) => {
     const result = await GlobalApi.SaveUserFavRecipe(data);
     console.log(result);
     Alert.alert("Saved!", "Recipe Saved in your cookbook!");
-    setSaved(true);
+    setSaved(isFav);
   };
   const removeSavedRecipe = () => {
     // Removed Saved Recipe
@@ -41,26 +42,30 @@ const RecipeIntro = ({ recipe }: any) => {
       <View
         style={{
           flexDirection: "row",
-          justifyContent: "space-between",
+          // justifyContent: "space-between",
           alignItems: "center",
         }}
       >
-        <Text
-          style={{
-            fontFamily: FONTFAMILY.outfit,
-            fontSize: 25,
-            marginTop: 7,
-          }}
-        >
-          {recipe?.recipeName}
-        </Text>
+        <View style={{ flex: 1 }}>
+          <Text
+            style={{
+              fontFamily: FONTFAMILY.outfit,
+              fontSize: 25,
+              marginTop: 7,
+            }}
+            numberOfLines={1}
+            ellipsizeMode="tail"
+          >
+            {recipe?.recipeName}
+          </Text>
+        </View>
         <TouchableOpacity
           onPress={() => (!saved ? SaveRecipe() : removeSavedRecipe())}
         >
-          {!saved ? (
+          {!isFav ? (
             <Ionicons name="bookmark-outline" size={24} color={"black"} />
           ) : (
-            <Ionicons name="bookmark-outline" size={24} color={"red"} />
+            <Ionicons name="bookmark" size={24} color={"red"} />
           )}
         </TouchableOpacity>
       </View>
